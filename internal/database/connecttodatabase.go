@@ -19,7 +19,7 @@ func ConnectToDataBase() *sql.DB {
         log.Fatalf("Erreur de ping à la base de données: %v", err)
     }
 
-    log.Println("Connexion à la base de données réussie!")
+    log.Println("Connexion à la base de données réussie")
 
     return db
 }

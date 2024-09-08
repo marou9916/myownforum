@@ -5,25 +5,8 @@ import (
 	"log"
 )
 
+// Créer les tables de données
 func CreateDataTables(db *sql.DB) {
-
-    dropTablesSQL := `
-    
-    DROP TABLE IF EXISTS Users;
-    DROP TABLE IF EXISTS Categories;
-    DROP TABLE IF EXISTS Posts;
-    DROP TABLE IF EXISTS Comments;
-    DROP TABLE IF EXISTS PostLikes;
-    DROP TABLE IF EXISTS CommentLikes;
-    DROP TABLE IF EXISTS PostDislikes;
-    DROP TABLE IF EXISTS CommentDislikes; 
-    `
-    _, err := db.Exec(dropTablesSQL)
-    if err != nil {
-        log.Fatalf("Erreur lors de la suppression des tables existantes: %v", err)
-    }
-
-
 	createTablesSQL := `
 
 	    CREATE TABLE IF NOT EXISTS Users (
@@ -94,8 +77,8 @@ func CreateDataTables(db *sql.DB) {
         FOREIGN KEY (user_id) REFERENCES Users(user_id),
         FOREIGN KEY (comment_id) REFERENCES Comments(comment_id)
     );
- `   
-	_, err = db.Exec(createTablesSQL)
+ `
+	_, err := db.Exec(createTablesSQL)
 	if err != nil {
 		log.Fatalf("Erreur lors de la création des tables: %v", err)
 	}
