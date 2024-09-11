@@ -11,7 +11,7 @@ import (
 func ConnectToDataBase() *sql.DB {
     db, err := sql.Open("sqlite3", "/home/student/myownforum/migrations/database.sqlite")
     if err != nil {
-        log.Fatalf("Erreur lors de la création de la base de données: %v", err)
+        log.Fatalf("Erreur lors de la connexion à la base de données: %v", err)
     }
 
     err = db.Ping()
