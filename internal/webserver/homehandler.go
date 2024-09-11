@@ -9,47 +9,54 @@ import (
 
 // Servir la page d'accueil
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	//Se connecter à la base de données
-	db := database.ConnectToDataBase()
-	defer db.Close()
+    db := database.ConnectToDataBase()
+    defer db.Close()
 
-	//Récupérer les données de la base
-	selectDataSQL := `SELECT p.post_id, p.post_date, p.post_content, c.category_name 
-		FROM Posts p
-		JOIN Categories c ON p.category_id = c.category_id
-		ORDER BY post_date DESC LIMIT 10`
+    rows, err := db.Query("SELECT post_id, post_date, post_content, category_id FROM Posts")
+    if err != nil {
+        http.Error(w, "Erreur lors de la récupération des posts", http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
 
-	rows, err := db.Query(selectDataSQL)
-	if err != nil {
-		http.Error(w, "Erreur lors de la récupération des données", http.StatusInternalServerError)
-		return
-	}
+	var postWithComments []models.PostWithComments
+    for rows.Next() {
+		//Récupérer les posts
+        var post models.Post
+        if err := rows.Scan(&post.PostID, &post.PostDate, &post.PostContent, &post.CategoryName); err != nil {
+            http.Error(w, "Erreur lors de la lecture des posts", http.StatusInternalServerError)
+            return
+        }
+        
+        // Récupérer les commentaires
+        comments, err := GetCommentsForPost(post.PostID)
+        if err != nil {
+            http.Error(w, "Erreur lors de la récupération des commentaires", http.StatusInternalServerError)
+            return
+        }
+        
+        postWithComments = append(postWithComments, models.PostWithComments{
+			Post: post,
+			Comments: comments, 
+		})
+    }
 
-	var posts []models.Post
+    tmpl, err := template.ParseFiles("web/templates/index.html")
+    if err != nil {
+        http.Error(w, "Erreur lors du chargement du template", http.StatusInternalServerError)
+        return
+    }
 
-	for rows.Next() {
-		var post models.Post
+    data := struct {
+        Posts []models.PostWithComments
+    }{
+        postWithComments,
+    }
 
-		if err := rows.Scan(&post.PostID, &post.PostDate, &post.PostContent, &post.CategoryName); err != nil {
-			http.Error(w, "Erreur lors de la lecture des posts", http.StatusInternalServerError)
-			return
-		}
+    err = tmpl.Execute(w, data)
+    if err != nil {
+        http.Error(w, "Erreur lors du rendu du template", http.StatusInternalServerError)
+        return
+    }
 
-		posts = append(posts, post)
-	}
-
-	//Charger le template de la page d'accueil
-	tmpl, err := template.ParseFiles("/home/student/myownforum/web/templates/index.html")
-	if err != nil {
-		http.Error(w, "Erreur lors du chargement du template", http.StatusInternalServerError)
-		return
-	}
-	//EXécuter le template en y injectant les données
-	data := struct {
-		Posts []models.Post
-	}{
-		Posts: posts,
-	}
-
-	tmpl.Execute(w, data)
 }

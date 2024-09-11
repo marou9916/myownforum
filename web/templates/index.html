@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum Home</title>
+    <title>Forum Posts</title>
 </head>
 <body>
-    <h1>Welcome to the Forum</h1>
-    
-    <h2>Recent Posts</h2>
+    <h1>Forum Posts</h1>
     {{range .Posts}}
         <div class="post">
+            <h2>Post ID: {{.PostID}}</h2>
             <p>Category: {{.CategoryName}}</p>
-            <h3>{{.PostContent}}</h3>
-            <p><strong>Date:</strong> {{.PostDate}}</p>
+            <p>Date: {{.PostDate}}</p>
+            <p>{{.PostContent}}</p>
+           
+            <h3>Comments:</h3>
+            {{range .Comments}}
+                <div class="comment">
+                    <p>{{.CommentContent}}</p>
+                    <small>Comment Date: {{.CommentDate}}</small>
+                </div>
+            {{else}}
+                <p>No comments yet.</p>
+            {{end}}
         </div>
-    {{else}}
-        <p>No posts available.</p>
     {{end}}
-
-    <footer>
-        <p>Forum footer content</p>
-    </footer>
 </body>
 </html>
